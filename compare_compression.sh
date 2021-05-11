@@ -14,10 +14,20 @@
 # USER information section
 # Users please fill in this section before running the script
 
+# Path to the input file
 input_file="test_file.nc"
+
+# Path to the zstd executable
 zstd_path="/scratch/snx3000/ksilver/compression/zstd/programs"
+
+# Path to the sz executable
 sz_path="/scratch/snx3000/ksilver/compression/install_sz/bin"
+
+# Path to the zfp executable
 zfp_path="/scratch/snx3000/ksilver/compression/zfp/build/bin"
+
+# String containing number of data dimensions, followed by the dimensions themselves
+dims="4 1 26 1180 2100" 
 
 #--------------------------------------------------------------------------------
 # Setup
@@ -151,9 +161,9 @@ echo "Finished with bit grooming"
 echo "Starting SZ"
 
 # Compress
-sz_7_time_comp=`(time $sz_path/sz -z -f -M ABS -A 1E-7 -i $input_file -4 1 26 1180 2100) 2>&1`
+sz_7_time_comp=`(time $sz_path/sz -z -f -M ABS -A 1E-7 -i $input_file -$dims) 2>&1`
 mv *.sz test_sz7.nc
-sz_4_time_comp=`(time $sz_path/sz -z -f -M ABS -A 1E-4 -i $input_file -4 1 26 1180 2100) 2>&1`
+sz_4_time_comp=`(time $sz_path/sz -z -f -M ABS -A 1E-4 -i $input_file -$dims) 2>&1`
 mv *.sz test_sz4.nc.sz
 mv test_sz7.nc test_sz7.nc.sz
 
@@ -162,8 +172,8 @@ sz_7_size=$(ls -lah test_sz7.nc.sz | awk -F " " {'print $5'})
 sz_4_size=$(ls -lah test_sz4.nc.sz | awk -F " " {'print $5'})
 
 # Decompress
-sz_7_time_decomp=`(time $sz_path/sz -x -f -s test_sz7.nc.sz -4 1 26 1180 2100) 2>&1`
-sz_4_time_decomp=`(time $sz_path/sz -x -f -s test_sz4.nc.sz -4 1 26 1180 2100) 2>&1`
+sz_7_time_decomp=`(time $sz_path/sz -x -f -s test_sz7.nc.sz -$dims) 2>&1`
+sz_4_time_decomp=`(time $sz_path/sz -x -f -s test_sz4.nc.sz -$dims) 2>&1`
 
 # Output results to file
 echo "SZ" >> "compression.out"
@@ -181,16 +191,16 @@ echo "Finished with SZ"
 echo "Starting zfp"
 
 # Compress
-zfp_32_time_comp=`(time $zfp_path/zfp -q -i $input_file -o test_zfp32.nc -f -4 1 26 1180 2100 -p 32) 2>&1`
-zfp_16_time_comp=`(time $zfp_path/zfp -q -i $input_file -o test_zfp16.nc -f -4 1 26 1180 2100 -p 16) 2>&1`
+zfp_32_time_comp=`(time $zfp_path/zfp -q -i $input_file -o test_zfp32.nc -f -$dims -p 32) 2>&1`
+zfp_16_time_comp=`(time $zfp_path/zfp -q -i $input_file -o test_zfp16.nc -f -$dims -p 16) 2>&1`
 
 # Get compressed file size
 zfp_32_size=$(ls -lah test_zfp32.nc | awk -F " " {'print $5'})
 zfp_16_size=$(ls -lah test_zfp16.nc | awk -F " " {'print $5'})
 
 # Decompress
-zfp_32_time_decomp=`(time $zfp_path/zfp -q -z test_zfp32.nc -o test_zfp32_decomp.nc -f -4 1 26 1180 2100 -p 32) 2>&1`
-zfp_16_time_decomp=`(time $zfp_path/zfp -q -z test_zfp16.nc -o test_zfp16_decomp.nc -f -4 1 26 1180 2100 -p 16) 2>&1`
+zfp_32_time_decomp=`(time $zfp_path/zfp -q -z test_zfp32.nc -o test_zfp32_decomp.nc -f -$dims -p 32) 2>&1`
+zfp_16_time_decomp=`(time $zfp_path/zfp -q -z test_zfp16.nc -o test_zfp16_decomp.nc -f -$dims -p 16) 2>&1`
 
 # Output results to file
 echo "zfp" >> "compression.out"
